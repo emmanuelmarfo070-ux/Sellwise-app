@@ -15,7 +15,7 @@
 
     <header class="bg-black text-white p-5 flex justify-between items-center shadow-lg">
         <h1 class="text-xl font-black italic">Sell<span class="text-yellow-400">Wise</span></h1>
-        <div id="user-tag" class="text-[10px] font-black border border-yellow-400 px-3 py-1 rounded-full text-yellow-400"></div>
+        <div id="user-tag" class="text-[10px] font-black border border-yellow-400 px-3 py-1 rounded-full text-yellow-400 uppercase"></div>
     </header>
 
     <main class="p-6 max-w-lg mx-auto">
@@ -34,7 +34,7 @@
 
             <div id="loader" class="hidden py-8">
                 <div class="loading-spinner"></div>
-                <p class="mt-4 font-black text-sm text-gray-600">SellWise AI is analyzing...</p>
+                <p class="mt-4 font-black text-sm text-gray-600 tracking-tight">AI is pricing your item...</p>
             </div>
 
             <div id="output" class="hidden text-left space-y-5">
@@ -46,7 +46,7 @@
                     <p class="text-[10px] text-yellow-400 font-black uppercase tracking-widest">Sales Caption</p>
                     <p id="caption-out" class="text-sm mt-3 font-medium italic leading-relaxed"></p>
                 </div>
-                <button onclick="location.reload()" class="w-full py-5 bg-black text-white rounded-2xl font-black shadow-lg">SCAN ANOTHER</button>
+                <button onclick="location.reload()" class="w-full py-5 bg-black text-white rounded-2xl font-black shadow-lg hover:opacity-90 active:scale-95 transition">SCAN NEW ITEM</button>
             </div>
         </section>
     </main>
@@ -56,7 +56,7 @@
         const user = localStorage.getItem('sw_user') || "Seller";
         const market = localStorage.getItem('sw_market') || "Ghana (GHS)";
 
-        document.getElementById('user-tag').innerText = user.toUpperCase();
+        document.getElementById('user-tag').innerText = user;
 
         document.getElementById('file-in').onchange = async (e) => {
             const file = e.target.files[0];
@@ -72,13 +72,13 @@
             reader.onload = async () => {
                 const base64 = reader.result.split(',')[1];
                 try {
-                    // CHANGED URL TO v1 (Stable)
-                    const resp = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                    // UPDATED MODEL NAME TO gemini-2.0-flash
+                    const resp = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
                             contents: [{ parts: [
-                                {text: `Identify this product for the ${market} market. 1. Give a realistic selling price in local currency. 2. Write a catchy sales caption with local slang. Return ONLY JSON: {"price":"...", "caption":"..."}`},
+                                {text: `Identify this product for the ${market} market. 1. Give a realistic selling price in local currency. 2. Write a short catchy sales caption with local slang. Return ONLY as JSON: {"price":"...", "caption":"..."}`},
                                 {inline_data: {mime_type: file.type, data: base64}}
                             ]}]
                         })
@@ -87,14 +87,16 @@
                     const resData = await resp.json();
                     
                     if(resData.error) {
-                        alert("Market busy! " + resData.error.message);
+                        alert("AI Response: " + resData.error.message);
                         location.reload();
                         return;
                     }
 
-                    const rawText = resData.candidates[0].content.parts[0].text;
-                    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-                    const json = JSON.parse(jsonMatch[0]);
+                    // Extract text carefully
+                    let rawText = resData.candidates[0].content.parts[0].text;
+                    // Remove markdown code blocks if AI adds them
+                    rawText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+                    const json = JSON.parse(rawText);
 
                     document.getElementById('loader').classList.add('hidden');
                     document.getElementById('output').classList.remove('hidden');
@@ -102,7 +104,8 @@
                     document.getElementById('caption-out').innerText = json.caption;
 
                 } catch (err) {
-                    alert("Logic Error: " + err.message);
+                    console.error(err);
+                    alert("Chale, let's try one more time! The market is a bit busy.");
                     location.reload();
                 }
             };
