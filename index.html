@@ -19,15 +19,14 @@
 </head>
 <body class="min-h-screen pb-10">
 
-    <nav class="p-6 flex justify-between items-center border-b border-white/5 sticky top-0 bg-black/50 backdrop-blur-md z-50">
+    <nav class="p-6 flex justify-between items-center border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-50">
         <div class="flex items-center gap-2">
-            <div class="w-8 h-8 accent-gradient rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(252,209,22,0.3)]">
+            <div class="w-8 h-8 accent-gradient rounded-lg flex items-center justify-center">
                 <i class="fas fa-bolt text-black text-sm"></i>
             </div>
             <h1 class="text-xl font-extrabold tracking-tighter">Sell<span class="text-[#fcd116]">Wise</span></h1>
         </div>
         <div id="user-pill" class="hidden glass px-4 py-2 rounded-full flex items-center gap-2">
-            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
             <span id="nav-user-name" class="text-[10px] font-bold uppercase tracking-widest text-gray-400"></span>
         </div>
     </nav>
@@ -35,10 +34,10 @@
     <main class="max-w-lg mx-auto px-6 pt-8">
         <header id="welcome-msg" class="mb-10 hidden fade-in text-center">
             <h2 class="text-3xl font-extrabold mb-2 tracking-tight">Market <span class="text-[#fcd116]">Insights</span></h2>
-            <p class="text-gray-500 text-sm">Targeting <span id="market-text" class="text-white font-semibold"></span></p>
+            <p class="text-gray-500 text-sm">Current landscape: <span id="market-text" class="text-white font-semibold"></span></p>
         </header>
 
-        <section class="glass rounded-[2.5rem] p-8 text-center relative overflow-hidden">
+        <section class="glass rounded-[2.5rem] p-8 text-center relative overflow-hidden transition-all duration-500">
             <div id="preview-container" class="hidden mb-8 fade-in">
                 <img id="img-output" class="w-full h-80 object-cover rounded-3xl shadow-2xl border border-white/10">
             </div>
@@ -48,8 +47,8 @@
                     <div class="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-6">
                         <i class="fas fa-camera-retro text-3xl text-[#fcd116]"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-2">Analyze Product</h3>
-                    <p class="text-gray-500 text-xs px-10">Snap a photo to get street prices.</p>
+                    <h3 class="text-xl font-bold mb-2">Analyze Item</h3>
+                    <p class="text-gray-500 text-xs px-10">Snap a photo to generate a price.</p>
                 </div>
                 <input type="file" id="file-upload" class="hidden" accept="image/*">
             </label>
@@ -67,7 +66,7 @@
                 <div class="glass p-8 rounded-[2rem]">
                     <p class="text-[10px] font-black uppercase tracking-widest text-[#fcd116] mb-4">Optimized Caption</p>
                     <p id="final-caption" class="text-sm font-medium leading-relaxed text-gray-300 italic"></p>
-                    <button onclick="location.reload()" class="mt-8 w-full py-4 bg-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition">New Scan</button>
+                    <button onclick="location.reload()" class="mt-8 w-full py-4 bg-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest">New Scan</button>
                 </div>
             </div>
         </section>
@@ -75,14 +74,14 @@
 
     <div id="onboarding" class="fixed inset-0 z-[100] glass flex items-center justify-center p-6 hidden fade-in">
         <div class="bg-[#111] w-full max-w-sm rounded-[3rem] p-10 border border-white/10 shadow-3xl">
-            <h2 class="text-3xl font-black mb-8 tracking-tight">Setup Profile</h2>
+            <h2 class="text-3xl font-black mb-8 tracking-tight text-center">Reseller Profile</h2>
             <div class="space-y-4">
-                <input type="text" id="setup-name" placeholder="Entity Name (e.g. Kwesi Deals)" class="w-full p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-[#fcd116] font-bold text-white">
+                <input type="text" id="setup-name" placeholder="Entity Name" class="w-full p-5 bg-white/5 border border-white/10 rounded-2xl outline-none text-white font-bold">
                 <select id="setup-market" class="w-full p-5 bg-white/5 border border-white/10 rounded-2xl outline-none font-bold text-white">
                     <option value="Ghana (GHS)">🇬🇭 Ghana (GHS)</option>
                     <option value="Nigeria (NGN)">🇳🇬 Nigeria (NGN)</option>
                 </select>
-                <button onclick="onboard()" class="w-full accent-gradient text-black py-5 rounded-2xl font-black text-lg shadow-lg">Initialize</button>
+                <button onclick="onboard()" class="w-full accent-gradient text-black py-5 rounded-2xl font-black text-lg">Enter Market</button>
             </div>
         </div>
     </div>
@@ -105,7 +104,7 @@
         window.onboard = () => {
             const name = document.getElementById('setup-name').value;
             const market = document.getElementById('setup-market').value;
-            if(!name) return alert("Please enter a name.");
+            if(!name) return alert("Oops! Please enter a name.");
             localStorage.setItem('sw_user', name);
             localStorage.setItem('sw_market', market);
             location.reload();
@@ -126,19 +125,23 @@
             reader.onload = async () => {
                 const base64 = reader.result.split(',')[1];
                 try {
-                    // NOTICE: No API Key here! We call our internal "bridge"
+                    // Calling our hidden internal API bridge
                     const resp = await fetch('/api/analyze', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
                             contents: [{ parts: [
-                                {text: `Identify this product for the ${state.market} market. Return strictly JSON: {"price": "string", "caption": "string"}`},
+                                {text: `Reseller analysis for ${state.market}. Item identification, price, and caption with local slang. Return JSON: {"price": "string", "caption": "string"}`},
                                 {inline_data: {mime_type: file.type, data: base64}}
                             ]}]
                         })
                     });
 
                     const data = await resp.json();
+                    
+                    // Handle API failures gracefully
+                    if (data.error) throw new Error();
+
                     let content = data.candidates[0].content.parts[0].text;
                     const json = JSON.parse(content.match(/\{[\s\S]*\}/)[0]);
 
@@ -146,8 +149,10 @@
                     document.getElementById('result-display').classList.remove('hidden');
                     document.getElementById('final-price').innerText = json.price;
                     document.getElementById('final-caption').innerText = json.caption;
+
                 } catch (err) {
-                    alert("System busy. Check your Vercel logs or API settings.");
+                    // Friendly error message for the user
+                    alert("Oops! Something went wrong. Please try again later, chale.");
                     location.reload();
                 }
             };
