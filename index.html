@@ -14,7 +14,7 @@
 <body class="bg-gray-50">
 
     <header class="bg-black text-white p-5 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-yellow-400">SellWise</h1>
+        <h1 class="text-xl font-black italic">Sell<span class="text-yellow-400">Wise</span></h1>
         <div id="user-tag" class="text-[10px] font-bold border border-yellow-400 px-2 py-1 rounded"></div>
     </header>
 
@@ -24,34 +24,35 @@
                 <img id="img-out" class="w-full h-64 object-contain rounded-2xl bg-gray-50">
             </div>
 
-            <label id="input-label" class="cursor-pointer block py-12 border-2 border-dashed border-gray-200 rounded-[2rem]">
+            <label id="input-label" class="cursor-pointer block py-12 border-2 border-dashed border-gray-200 rounded-[2rem] hover:border-yellow-400 transition">
                 <i class="fas fa-camera text-3xl text-gray-300 mb-4"></i>
-                <p class="font-bold text-gray-800">Upload Product Photo</p>
+                <p class="font-bold text-gray-800">Scan Product</p>
                 <input type="file" id="file-in" class="hidden" accept="image/*">
             </label>
 
             <div id="loader" class="hidden py-8">
                 <div class="loading-spinner"></div>
-                <p class="mt-4 font-bold text-sm">AI is analyzing price...</p>
+                <p class="mt-4 font-bold text-sm animate-pulse">AI is pricing your item...</p>
             </div>
 
             <div id="output" class="hidden text-left space-y-4">
-                <div class="bg-yellow-400 p-6 rounded-2xl">
-                    <p class="text-[10px] font-bold uppercase">Market Price</p>
+                <div class="bg-yellow-400 p-6 rounded-2xl shadow-lg">
+                    <p class="text-[10px] font-black uppercase opacity-60">Sell Price</p>
                     <h2 id="price-out" class="text-3xl font-black"></h2>
                 </div>
-                <div class="bg-gray-900 text-white p-6 rounded-2xl">
-                    <p class="text-[10px] text-yellow-400 font-bold uppercase">Sales Caption</p>
-                    <p id="caption-out" class="text-sm mt-2 italic"></p>
+                <div class="bg-gray-900 text-white p-6 rounded-2xl shadow-lg">
+                    <p class="text-[10px] text-yellow-400 font-black uppercase">Caption</p>
+                    <p id="caption-out" class="text-sm mt-2 font-medium italic"></p>
                 </div>
-                <button onclick="location.reload()" class="w-full py-4 bg-black text-white rounded-xl font-bold">SCAN AGAIN</button>
+                <button onclick="location.reload()" class="w-full py-4 bg-black text-white rounded-xl font-bold shadow-md">SCAN NEW ITEM</button>
             </div>
         </section>
     </main>
 
     <script type="module">
+        // Using your verified key
         const API_KEY = "AIzaSyB0iQEws1bPOVwy769GmE-Un_PDV4oBZBU";
-        const user = localStorage.getItem('sw_user') || "Reseller";
+        const user = localStorage.getItem('sw_user') || "Seller";
         const market = localStorage.getItem('sw_market') || "Ghana (GHS)";
 
         document.getElementById('user-tag').innerText = user.toUpperCase();
@@ -70,12 +71,13 @@
             reader.onload = async () => {
                 const base64 = reader.result.split(',')[1];
                 try {
-                    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`, {
+                    // CHANGED MODEL NAME HERE
+                    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
                             contents: [{ parts: [
-                                {text: `Identify this product for the ${market} market. Give a realistic street price and a caption with slang. Return ONLY JSON: {"price":"...", "caption":"..."}`},
+                                {text: `Identify this product for the ${market} market. 1. Give a realistic selling price in local currency. 2. Write a short sales caption with local slang. Return ONLY JSON: {"price":"...", "caption":"..."}`},
                                 {inline_data: {mime_type: file.type, data: base64}}
                             ]}]
                         })
@@ -84,13 +86,18 @@
                     const resData = await resp.json();
                     
                     if(resData.error) {
-                        alert("API Error: " + resData.error.message);
+                        alert("Error: " + resData.error.message);
                         location.reload();
                         return;
                     }
 
-                    const txt = resData.candidates[0].content.parts[0].text;
-                    const json = JSON.parse(txt.match(/\{.*\}/s)[0]);
+                    // Stronger parser to find JSON even if AI adds extra text
+                    const rawText = resData.candidates[0].content.parts[0].text;
+                    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+                    
+                    if (!jsonMatch) throw new Error("AI response was not in the right format. Try again.");
+                    
+                    const json = JSON.parse(jsonMatch[0]);
 
                     document.getElementById('loader').classList.add('hidden');
                     document.getElementById('output').classList.remove('hidden');
@@ -98,7 +105,7 @@
                     document.getElementById('caption-out').innerText = json.caption;
 
                 } catch (err) {
-                    alert("Logic Error: " + err.message);
+                    alert("Chale, let's try one more time! " + err.message);
                     location.reload();
                 }
             };
