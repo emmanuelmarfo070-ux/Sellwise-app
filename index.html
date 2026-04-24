@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SellWise | International Reseller</title>
+    <title>SellWise | Ghana & Nigeria Reseller</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -18,43 +18,90 @@
         <div class="container mx-auto flex justify-between items-center">
             <div>
                 <h1 class="text-xl font-black">Sell<span class="brand-accent">Wise</span></h1>
-                <select id="market-selector" class="bg-gray-800 text-[10px] text-white border-none rounded px-1 focus:ring-0">
-                    <option value="Ghana Cedis (GH₵)">🇬🇭 Ghana</option>
-                    <option value="Nigerian Naira (₦)">🇳🇬 Nigeria</option>
-                </select>
+                <p id="active-market" class="text-[10px] text-gray-400 font-bold uppercase">Ready to Sell</p>
             </div>
-            <div id="user-display">
-                <button onclick="toggleModal(true)" class="bg-blue-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition">
-                    Sign Up
-                </button>
+            <div id="auth-section">
+                <button onclick="toggleModal(true)" class="bg-blue-600 px-4 py-2 rounded-xl text-xs font-bold">Sign Up</button>
             </div>
         </div>
     </header>
 
-    <main class="container mx-auto px-4 py-8 max-w-lg">
-        <section id="upload-section" class="glass-card rounded-3xl shadow-xl p-6 mb-6 border-2 border-dashed border-blue-200 text-center">
-            <div id="preview-container" class="hidden mb-4"><img id="image-preview" class="w-full h-64 object-cover rounded-2xl shadow-md"></div>
+    <main class="container mx-auto px-4 py-8 max-w-lg text-center">
+        <div id="welcome-msg" class="mb-6 hidden">
+            <h2 class="text-2xl font-black">Hello, <span id="user-name-display" class="text-blue-600">Reseller</span>!</h2>
+            <p class="text-gray-500 text-sm">Upload a product to get prices.</p>
+        </div>
+
+        <section class="glass-card rounded-3xl shadow-xl p-8 border-2 border-dashed border-blue-200">
             <label class="cursor-pointer">
-                <div id="upload-placeholder" class="py-10">
-                    <div class="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-camera text-2xl text-blue-600"></i></div>
+                <div class="py-10">
+                    <div class="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-camera text-2xl text-blue-600"></i>
+                    </div>
                     <p class="text-gray-800 font-bold text-lg">Snap Product</p>
-                    <p class="text-gray-500 text-xs mt-2">Upload to get Ghana/Nigeria pricing</p>
+                    <p class="text-gray-400 text-xs mt-1">Get local market prices instantly</p>
                 </div>
-                <input type="file" id="image-input" class="hidden" accept="image/*" onchange="alert('We will connect Gemini in Step 4!')">
+                <input type="file" class="hidden" accept="image/*">
             </label>
         </section>
     </main>
 
     <div id="signup-modal" class="fixed inset-0 z-[100] bg-black bg-opacity-80 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl">
-            <h2 class="text-2xl font-black mb-2">Join SellWise</h2>
-            <button onclick="toggleModal(false)" class="w-full text-gray-400 text-xs mt-4 uppercase font-bold tracking-widest">Close</button>
+        <div class="bg-white w-full max-w-sm rounded-3xl p-8">
+            <h2 class="text-2xl font-black mb-4">Create Account</h2>
+            <div class="space-y-4">
+                <input type="text" id="reg-name" placeholder="Full Name" class="w-full p-3 bg-gray-100 rounded-xl outline-none">
+                <select id="reg-market" class="w-full p-3 bg-gray-100 rounded-xl outline-none">
+                    <option value="GH₵">🇬🇭 Ghana Market (GHS)</option>
+                    <option value="₦">🇳🇬 Nigeria Market (NGN)</option>
+                </select>
+                <button onclick="saveUser()" class="w-full bg-black text-white py-4 rounded-2xl font-black">Start Selling</button>
+            </div>
         </div>
     </div>
 
-    <script>
-        function toggleModal(show) {
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        
+        // YOUR CONFIGURATION
+        const firebaseConfig = {
+          apiKey: "AIzaSyDL3wSVKc7K9rZldCehMvyQSsi5thZCNz0",
+          authDomain: "sellwise-9dfca.firebaseapp.com",
+          projectId: "sellwise-9dfca",
+          storageBucket: "sellwise-9dfca.firebasestorage.app",
+          messagingSenderId: "543388903174",
+          appId: "1:543388903174:web:7c307e34cfcfd711d1e087"
+        };
+
+        const app = initializeApp(firebaseConfig);
+
+        // UI LOGIC
+        window.toggleModal = (show) => {
             document.getElementById('signup-modal').style.display = show ? 'flex' : 'none';
+        }
+
+        window.saveUser = () => {
+            const name = document.getElementById('reg-name').value;
+            const market = document.getElementById('reg-market').value;
+            
+            if(name === "") return alert("Please enter your name");
+
+            // Save user data to local storage for now
+            localStorage.setItem('sw_user', name);
+            localStorage.setItem('sw_currency', market);
+            
+            location.reload(); // Refresh to show logged in state
+        }
+
+        // Check if user is logged in
+        const savedUser = localStorage.getItem('sw_user');
+        const savedMarket = localStorage.getItem('sw_currency');
+
+        if(savedUser) {
+            document.getElementById('auth-section').innerHTML = `<span class="font-bold text-blue-600">${savedUser}</span>`;
+            document.getElementById('active-market').innerText = `Market: ${savedMarket}`;
+            document.getElementById('welcome-msg').classList.remove('hidden');
+            document.getElementById('user-name-display').innerText = savedUser;
         }
     </script>
 </body>
