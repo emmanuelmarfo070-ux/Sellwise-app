@@ -3,113 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SellWise AI</title>
+    <title>SellWise | AI Reseller Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #fbbf24; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #000; color: #fff; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .accent-gradient { background: linear-gradient(135deg, #fcd116 0%, #f7a01b 100%); }
+        .loader-ring { border: 3px solid rgba(252, 209, 22, 0.1); border-top: 3px solid #fcd116; border-radius: 50%; width: 50px; height: 50px; animation: spin 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="min-h-screen pb-10">
 
-    <header class="bg-black text-white p-5 flex justify-between items-center shadow-lg">
-        <h1 class="text-xl font-black italic">Sell<span class="text-yellow-400">Wise</span></h1>
-        <div id="user-tag" class="text-[10px] font-black border border-yellow-400 px-3 py-1 rounded-full text-yellow-400 uppercase"></div>
-    </header>
+    <nav class="p-6 flex justify-between items-center border-b border-white/5 sticky top-0 bg-black/50 backdrop-blur-md z-50">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 accent-gradient rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(252,209,22,0.3)]">
+                <i class="fas fa-bolt text-black text-sm"></i>
+            </div>
+            <h1 class="text-xl font-extrabold tracking-tighter">Sell<span class="text-[#fcd116]">Wise</span></h1>
+        </div>
+        <div id="user-pill" class="hidden glass px-4 py-2 rounded-full flex items-center gap-2">
+            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            <span id="nav-user-name" class="text-[10px] font-bold uppercase tracking-widest text-gray-400"></span>
+        </div>
+    </nav>
 
-    <main class="p-6 max-w-lg mx-auto">
-        <section class="bg-white rounded-[2.5rem] p-8 shadow-2xl border border-gray-100 text-center">
-            <div id="preview-box" class="hidden mb-6">
-                <img id="img-out" class="w-full h-72 object-contain rounded-3xl bg-gray-50 shadow-inner">
+    <main class="max-w-lg mx-auto px-6 pt-8">
+        
+        <header id="welcome-msg" class="mb-10 hidden fade-in">
+            <h2 class="text-3xl font-extrabold mb-2 tracking-tight">Market <span class="text-[#fcd116]">Insights</span></h2>
+            <p class="text-gray-500 text-sm">Targeting the <span id="market-text" class="text-white font-semibold"></span> landscape.</p>
+        </header>
+
+        <section class="glass rounded-[2.5rem] p-8 text-center relative overflow-hidden transition-all duration-500">
+            <div id="preview-container" class="hidden mb-8 fade-in">
+                <div class="relative group">
+                    <img id="img-output" class="w-full h-80 object-cover rounded-3xl shadow-2xl border border-white/10">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-3xl"></div>
+                </div>
             </div>
 
-            <label id="input-label" class="cursor-pointer block py-16 border-2 border-dashed border-gray-200 rounded-[2rem] hover:bg-yellow-50 transition">
-                <div class="bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-plus text-2xl text-yellow-600"></i>
+            <label id="upload-zone" class="cursor-pointer block group">
+                <div class="py-16 rounded-[2rem] border-2 border-dashed border-white/10 group-hover:border-[#fcd116]/50 group-hover:bg-[#fcd116]/5 transition-all duration-300">
+                    <div class="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-camera-retro text-3xl text-[#fcd116]"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 tracking-tight">Analyze Product</h3>
+                    <p class="text-gray-500 text-xs px-10">Snap or upload a photo to generate real-time pricing intelligence.</p>
                 </div>
-                <p class="font-black text-gray-800 text-lg">Tap to Scan Item</p>
-                <input type="file" id="file-in" class="hidden" accept="image/*">
+                <input type="file" id="file-upload" class="hidden" accept="image/*">
             </label>
 
-            <div id="loader" class="hidden py-8">
-                <div class="loading-spinner"></div>
-                <p class="mt-4 font-black text-sm text-gray-600 tracking-tight">AI is pricing your item...</p>
+            <div id="processing" class="hidden py-12 fade-in">
+                <div class="loader-ring mx-auto mb-6"></div>
+                <h4 class="text-lg font-bold text-[#fcd116] mb-1">Scanning Neural Networks</h4>
+                <p class="text-gray-500 text-[10px] uppercase tracking-[0.2em]">Evaluating local market data...</p>
             </div>
 
-            <div id="output" class="hidden text-left space-y-5">
-                <div class="bg-yellow-400 p-6 rounded-[2rem] shadow-xl">
-                    <p class="text-[10px] font-black uppercase tracking-tighter text-yellow-900">Recommended Price</p>
-                    <h2 id="price-out" class="text-4xl font-black mt-1"></h2>
+            <div id="result-display" class="hidden text-left space-y-6 fade-in">
+                <div class="accent-gradient p-8 rounded-[2rem] text-black shadow-[0_20px_40px_rgba(252,209,22,0.2)]">
+                    <div class="flex justify-between items-start mb-4">
+                        <p class="text-[10px] font-black uppercase tracking-widest opacity-60">Estimated Value</p>
+                        <span class="bg-black/10 px-2 py-1 rounded text-[8px] font-bold uppercase tracking-widest">Live Market</span>
+                    </div>
+                    <h2 id="final-price" class="text-5xl font-black tracking-tighter"></h2>
                 </div>
-                <div class="bg-gray-900 text-white p-6 rounded-[2rem] shadow-xl">
-                    <p class="text-[10px] text-yellow-400 font-black uppercase tracking-widest">Sales Caption</p>
-                    <p id="caption-out" class="text-sm mt-3 font-medium italic leading-relaxed"></p>
+
+                <div class="glass p-8 rounded-[2rem]">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-[#fcd116] mb-4">Optimized Caption</p>
+                    <p id="final-caption" class="text-sm font-medium leading-relaxed text-gray-300 italic"></p>
+                    <div class="mt-6 pt-6 border-t border-white/5 flex items-center justify-between">
+                        <div class="flex gap-2">
+                            <button class="w-10 h-10 glass rounded-xl flex items-center justify-center hover:bg-white/10"><i class="fab fa-whatsapp"></i></button>
+                            <button class="w-10 h-10 glass rounded-xl flex items-center justify-center hover:bg-white/10"><i class="fab fa-instagram"></i></button>
+                        </div>
+                        <button onclick="location.reload()" class="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white transition-colors">Reset Scan</button>
+                    </div>
                 </div>
-                <button onclick="location.reload()" class="w-full py-5 bg-black text-white rounded-2xl font-black shadow-lg hover:opacity-90 active:scale-95 transition">SCAN NEW ITEM</button>
             </div>
         </section>
     </main>
 
+    <div id="onboarding" class="fixed inset-0 z-[100] glass flex items-center justify-center p-6 hidden fade-in">
+        <div class="bg-[#111] w-full max-w-sm rounded-[3rem] p-10 border border-white/10 shadow-3xl">
+            <div class="w-12 h-12 accent-gradient rounded-2xl flex items-center justify-center mb-6">
+                <i class="fas fa-user-plus text-black"></i>
+            </div>
+            <h2 class="text-3xl font-black mb-2 tracking-tight">Setup Profile</h2>
+            <p class="text-gray-500 text-sm mb-8">Access cross-border reseller data.</p>
+            
+            <div class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold uppercase tracking-widest text-gray-500 ml-2">Entity Name</label>
+                    <input type="text" id="setup-name" placeholder="eg. MegaDeals GH" class="w-full p-5 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-[#fcd116] transition-colors font-bold">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold uppercase tracking-widest text-gray-500 ml-2">Primary Market</label>
+                    <select id="setup-market" class="w-full p-5 bg-white/5 border border-white/10 rounded-2xl outline-none font-bold">
+                        <option value="Ghana (GHS)">🇬🇭 Ghana (GHS)</option>
+                        <option value="Nigeria (NGN)">🇳🇬 Nigeria (NGN)</option>
+                    </select>
+                </div>
+                <button onclick="onboard()" class="w-full accent-gradient text-black py-5 rounded-2xl font-black text-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all mt-4">Initialize Account</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
-        const API_KEY = "AIzaSyB0iQEws1bPOVwy769GmE-Un_PDV4oBZBU";
-        const user = localStorage.getItem('sw_user') || "Seller";
-        const market = localStorage.getItem('sw_market') || "Ghana (GHS)";
+        // --- API CONFIGURATION ---
+        const API_KEY = "AIzaSyB0iQEws1bPOVwy769GmE-Un_PDV4oBZBU"; // This will start working again once your quota resets
 
-        document.getElementById('user-tag').innerText = user;
+        // --- SESSION MANAGEMENT ---
+        const state = {
+            user: localStorage.getItem('sw_user'),
+            market: localStorage.getItem('sw_market')
+        };
 
-        document.getElementById('file-in').onchange = async (e) => {
+        const init = () => {
+            if(!state.user) {
+                document.getElementById('onboarding').classList.remove('hidden');
+            } else {
+                document.getElementById('user-pill').classList.remove('hidden');
+                document.getElementById('nav-user-name').innerText = state.user;
+                document.getElementById('welcome-msg').classList.remove('hidden');
+                document.getElementById('market-text').innerText = state.market;
+            }
+        };
+
+        window.onboard = () => {
+            const name = document.getElementById('setup-name').value;
+            const market = document.getElementById('setup-market').value;
+            if(!name) return alert("Validation Failed: Please enter an entity name.");
+            localStorage.setItem('sw_user', name);
+            localStorage.setItem('sw_market', market);
+            location.reload();
+        };
+
+        // --- CORE AI LOGIC ---
+        const uploader = document.getElementById('file-upload');
+        uploader.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if(!file) return;
 
-            document.getElementById('input-label').classList.add('hidden');
-            document.getElementById('preview-box').classList.remove('hidden');
-            document.getElementById('img-out').src = URL.createObjectURL(file);
-            document.getElementById('loader').classList.remove('hidden');
+            // UI Transformation
+            document.getElementById('upload-zone').classList.add('hidden');
+            document.getElementById('preview-container').classList.remove('hidden');
+            document.getElementById('img-output').src = URL.createObjectURL(file);
+            document.getElementById('processing').classList.remove('hidden');
 
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = async () => {
-                const base64 = reader.result.split(',')[1];
+                const base64Content = reader.result.split(',')[1];
+                
                 try {
-                    // UPDATED MODEL NAME TO gemini-2.0-flash
-                    const resp = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            contents: [{ parts: [
-                                {text: `Identify this product for the ${market} market. 1. Give a realistic selling price in local currency. 2. Write a short catchy sales caption with local slang. Return ONLY as JSON: {"price":"...", "caption":"..."}`},
-                                {inline_data: {mime_type: file.type, data: base64}}
-                            ]}]
+                            contents: [{
+                                parts: [
+                                    { text: `SYSTEM: You are a market analyst for ${state.market}. Analyze the provided image. TASK: Provide a street-smart selling price and a viral social media caption with local cultural slang. FORMAT: Return strictly JSON: {"price": "string", "caption": "string"}` },
+                                    { inline_data: { mime_type: file.type, data: base64Content } }
+                                ]
+                            }]
                         })
                     });
 
-                    const resData = await resp.json();
-                    
-                    if(resData.error) {
-                        alert("AI Response: " + resData.error.message);
-                        location.reload();
-                        return;
+                    const data = await response.json();
+
+                    if(data.error) {
+                        if(data.error.message.includes("quota")) {
+                            throw new Error("QUOTA_LIMIT: You've hit your daily AI limit. Please check back later or update your API billing.");
+                        }
+                        throw new Error(data.error.message);
                     }
 
-                    // Extract text carefully
-                    let rawText = resData.candidates[0].content.parts[0].text;
-                    // Remove markdown code blocks if AI adds them
-                    rawText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-                    const json = JSON.parse(rawText);
+                    let content = data.candidates[0].content.parts[0].text;
+                    const cleanJson = content.substring(content.indexOf('{'), content.lastIndexOf('}') + 1);
+                    const parsed = JSON.parse(cleanJson);
 
-                    document.getElementById('loader').classList.add('hidden');
-                    document.getElementById('output').classList.remove('hidden');
-                    document.getElementById('price-out').innerText = json.price;
-                    document.getElementById('caption-out').innerText = json.caption;
+                    document.getElementById('processing').classList.add('hidden');
+                    document.getElementById('result-display').classList.remove('hidden');
+                    document.getElementById('final-price').innerText = parsed.price;
+                    document.getElementById('final-caption').innerText = parsed.caption;
 
-                } catch (err) {
-                    console.error(err);
-                    alert("Chale, let's try one more time! The market is a bit busy.");
+                } catch (error) {
+                    console.error("CRITICAL_FAILURE:", error);
+                    alert(`SERVICE NOTICE: ${error.message}`);
                     location.reload();
                 }
             };
-        };
+        });
+
+        init();
     </script>
 </body>
 </html>
