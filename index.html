@@ -3,156 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SellWise | AI Reseller</title>
+    <title>SellWise AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .brand-accent { color: #fcd116; }
-        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        #signup-modal { display: none; }
-        .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #000; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
+        .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #fbbf24; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50">
 
-    <header class="bg-black text-white p-5 shadow-xl sticky top-0 z-50">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-black tracking-tighter">Sell<span class="brand-accent">Wise</span></h1>
-            <div id="auth-section"></div>
-        </div>
+    <header class="bg-black text-white p-5 flex justify-between items-center">
+        <h1 class="text-xl font-bold text-yellow-400">SellWise</h1>
+        <div id="user-tag" class="text-[10px] font-bold border border-yellow-400 px-2 py-1 rounded"></div>
     </header>
 
-    <main class="container mx-auto px-4 py-6 max-w-lg">
-        <div id="welcome-msg" class="mb-6 hidden">
-            <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest text-center">Active Market: <span id="market-display" class="text-black"></span></p>
-        </div>
-
-        <section id="main-card" class="bg-white rounded-[2.5rem] shadow-2xl p-8 border border-gray-100 text-center">
-            <div id="preview-container" class="hidden mb-6">
-                <img id="image-preview" class="w-full h-72 object-contain rounded-3xl bg-gray-50">
+    <main class="p-6 max-w-lg mx-auto">
+        <section class="bg-white rounded-[2rem] p-8 shadow-xl border border-gray-100 text-center">
+            <div id="preview-box" class="hidden mb-4">
+                <img id="img-out" class="w-full h-64 object-contain rounded-2xl bg-gray-50">
             </div>
-            
-            <label class="cursor-pointer" id="upload-label">
-                <div class="py-16 border-2 border-dashed border-gray-200 rounded-[2rem] hover:bg-yellow-50 transition-all">
-                    <div class="bg-black w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 rotate-3">
-                        <i class="fas fa-camera text-2xl text-yellow-400"></i>
-                    </div>
-                    <p class="text-black font-black text-xl">Tap to Scan</p>
-                    <p class="text-gray-400 text-xs mt-2">Get Ghana & Nigeria prices</p>
-                </div>
-                <input type="file" id="image-input" class="hidden" accept="image/*">
+
+            <label id="input-label" class="cursor-pointer block py-12 border-2 border-dashed border-gray-200 rounded-[2rem]">
+                <i class="fas fa-camera text-3xl text-gray-300 mb-4"></i>
+                <p class="font-bold text-gray-800">Upload Product Photo</p>
+                <input type="file" id="file-in" class="hidden" accept="image/*">
             </label>
 
-            <div id="loading" class="hidden py-10">
+            <div id="loader" class="hidden py-8">
                 <div class="loading-spinner"></div>
-                <p class="text-sm mt-4 font-black text-black">Calculating market value...</p>
+                <p class="mt-4 font-bold text-sm">AI is analyzing price...</p>
             </div>
 
-            <div id="results" class="hidden text-left space-y-5">
-                <div class="bg-yellow-400 p-6 rounded-[2rem] text-black shadow-lg">
-                    <p class="text-[10px] uppercase font-black opacity-70 tracking-widest">Recommended Price</p>
-                    <h3 id="res-price" class="text-4xl font-black mt-1"></h3>
+            <div id="output" class="hidden text-left space-y-4">
+                <div class="bg-yellow-400 p-6 rounded-2xl">
+                    <p class="text-[10px] font-bold uppercase">Market Price</p>
+                    <h2 id="price-out" class="text-3xl font-black"></h2>
                 </div>
-                <div class="bg-gray-900 p-6 rounded-[2rem] text-white">
-                    <p class="text-[10px] uppercase font-black text-yellow-400 mb-2">Sell Caption</p>
-                    <p id="res-caption" class="text-sm font-medium leading-relaxed"></p>
+                <div class="bg-gray-900 text-white p-6 rounded-2xl">
+                    <p class="text-[10px] text-yellow-400 font-bold uppercase">Sales Caption</p>
+                    <p id="caption-out" class="text-sm mt-2 italic"></p>
                 </div>
-                <button onclick="location.reload()" class="w-full py-5 bg-black text-white rounded-2xl font-black hover:opacity-90 transition">SCAN ANOTHER ITEM</button>
+                <button onclick="location.reload()" class="w-full py-4 bg-black text-white rounded-xl font-bold">SCAN AGAIN</button>
             </div>
         </section>
     </main>
 
-    <div id="signup-modal" class="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 backdrop-blur-md">
-        <div class="bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl">
-            <h2 class="text-3xl font-black mb-1 tracking-tighter">SellWise</h2>
-            <p class="text-gray-400 text-sm mb-8 font-medium">Join the reseller network.</p>
-            <div class="space-y-4">
-                <input type="text" id="reg-name" placeholder="Business Name" class="w-full p-5 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-yellow-400">
-                <select id="reg-market" class="w-full p-5 bg-gray-50 border border-gray-100 rounded-2xl outline-none font-bold">
-                    <option value="Ghana (GHS)">🇬🇭 Ghana (GHS)</option>
-                    <option value="Nigeria (NGN)">🇳🇬 Nigeria (NGN)</option>
-                </select>
-                <button onclick="saveUser()" class="w-full bg-black text-white py-5 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition">Get Started</button>
-            </div>
-        </div>
-    </div>
-
     <script type="module">
         const API_KEY = "AIzaSyB0iQEws1bPOVwy769GmE-Un_PDV4oBZBU";
+        const user = localStorage.getItem('sw_user') || "Reseller";
+        const market = localStorage.getItem('sw_market') || "Ghana (GHS)";
 
-        window.toggleModal = (show) => { document.getElementById('signup-modal').style.display = show ? 'flex' : 'none'; };
-        
-        window.saveUser = () => {
-            const name = document.getElementById('reg-name').value;
-            const market = document.getElementById('reg-market').value;
-            if(!name) return alert("Please enter your business name!");
-            localStorage.setItem('sw_user', name);
-            localStorage.setItem('sw_market', market);
-            location.reload();
-        };
+        document.getElementById('user-tag').innerText = user.toUpperCase();
 
-        const user = localStorage.getItem('sw_user');
-        const market = localStorage.getItem('sw_market');
-        if(user) {
-            document.getElementById('auth-section').innerHTML = `<span class='text-[10px] font-black bg-yellow-400 text-black px-4 py-2 rounded-xl'>${user.toUpperCase()}</span>`;
-            document.getElementById('welcome-msg').classList.remove('hidden');
-            document.getElementById('market-display').innerText = market;
-        } else {
-            toggleModal(true);
-        }
-
-        const imageInput = document.getElementById('image-input');
-        imageInput.addEventListener('change', async (e) => {
+        document.getElementById('file-in').onchange = async (e) => {
             const file = e.target.files[0];
             if(!file) return;
 
-            document.getElementById('upload-label').classList.add('hidden');
-            document.getElementById('loading').classList.remove('hidden');
-            document.getElementById('preview-container').classList.remove('hidden');
-            document.getElementById('image-preview').src = URL.createObjectURL(file);
+            document.getElementById('input-label').classList.add('hidden');
+            document.getElementById('preview-box').classList.remove('hidden');
+            document.getElementById('img-out').src = URL.createObjectURL(file);
+            document.getElementById('loader').classList.remove('hidden');
 
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = async () => {
-                const base64Data = reader.result.split(',')[1];
-                
+                const base64 = reader.result.split(',')[1];
                 try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
-                            contents: [{
-                                parts: [
-                                    { text: `Act as a reseller expert for ${market}. Identify this item and provide: 1. A realistic selling price for the local market. 2. A 2-sentence sales caption with local slang. Return ONLY as JSON: {"price": "...", "caption": "..."}` },
-                                    { inline_data: { mime_type: file.type, data: base64Data } }
-                                ]
-                            }]
+                            contents: [{ parts: [
+                                {text: `Identify this product for the ${market} market. Give a realistic street price and a caption with slang. Return ONLY JSON: {"price":"...", "caption":"..."}`},
+                                {inline_data: {mime_type: file.type, data: base64}}
+                            ]}]
                         })
                     });
 
-                    const data = await response.json();
+                    const resData = await resp.json();
                     
-                    if (data.error) throw new Error(data.error.message);
+                    if(resData.error) {
+                        alert("API Error: " + resData.error.message);
+                        location.reload();
+                        return;
+                    }
 
-                    let rawText = data.candidates[0].content.parts[0].text;
-                    // Smart parser: find the first { and last }
-                    const start = rawText.indexOf('{');
-                    const end = rawText.lastIndexOf('}');
-                    const cleanJson = rawText.substring(start, end + 1);
-                    const result = JSON.parse(cleanJson);
+                    const txt = resData.candidates[0].content.parts[0].text;
+                    const json = JSON.parse(txt.match(/\{.*\}/s)[0]);
 
-                    document.getElementById('loading').classList.add('hidden');
-                    document.getElementById('results').classList.remove('hidden');
-                    document.getElementById('res-price').innerText = result.price;
-                    document.getElementById('res-caption').innerText = result.caption;
+                    document.getElementById('loader').classList.add('hidden');
+                    document.getElementById('output').classList.remove('hidden');
+                    document.getElementById('price-out').innerText = json.price;
+                    document.getElementById('caption-out').innerText = json.caption;
+
                 } catch (err) {
-                    console.error(err);
-                    alert("Chale, something went wrong. Let's try that again!");
+                    alert("Logic Error: " + err.message);
                     location.reload();
                 }
             };
-        });
+        };
     </script>
 </body>
 </html>
